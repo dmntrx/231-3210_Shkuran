@@ -1,0 +1,39 @@
+@hostname = http://localhost:80/api
+
+### запрос на Retrieve C(R)UD
+GET {{hostname}}/supercar
+Content-Type: application/json
+
+### запрос на Retrieve C(R)UD
+
+GET {{hostname}}/supercar/11
+Content-Type: application/json
+
+### запрос на Create (C)RUD
+
+POST {{hostname}}/supercar
+Content-Type: application/json
+
+{
+    "car_brand": "Ferrari",
+    "car_model": "Testarossa",
+    "brand_country": "Italy",
+    "release_date": "1984-01-01" ,
+    "max_speed": "290",
+    "engine_name": "Tipo F113"
+}
+
+### запрос на Delete CRU(D)
+
+DELETE {{hostname}}/supercar/1027
+Content-Type: application/json
+
+### запрос на Update CR(U)D
+
+PATCH {{hostname}}/supercar/6
+Content-Type: application/json
+
+{
+    "car_brand": "Porsche",
+    "car_model": "911"
+}

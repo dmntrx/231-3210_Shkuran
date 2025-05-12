@@ -1,0 +1,92 @@
+name: lab2-architecture
+
+# описание конетйнеров и образов, которые необходимо создать, выделяемые им ресурсы и взаимосвязи между ними
+
+services:
+  backend-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: backend-image
+    container_name: backend-container
+    # working_dir: /backend
+    # прокидываем порты (из докер-подсети в локалхост)
+    # пробитие firewall докера
+    # пробрасывание внутреннего порта 8000 на внешний 8000
+    # ports:
+      # - 8000:8000
+    restart: unless-stopped
+
+    working_dir: /backend
+    # command: python manage.py runserver 0.0.0.0:8000
+    command: >
+      sh -c "
+      gunicorn lab1.wsgi:application --bind 0.0.0.0:8000
+      "
+      
+    depends_on:
+      postgres-service:
+        condition: service_started
+      backend-build-service:
+        condition: service_completed_successfully
+    volumes:
+      - volume-static:/staticfiles
+
+  backend-build-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: backend-image
+    container_name: backend-build-container
+    working_dir: /backend
+    # command: python manage.py runserver 0.0.0.0:8000
+    command: >
+      sh -c "
+      python manage.py migrate --noinput &&
+      python manage.py collectstatic --noinput
+      "
+    depends_on:
+      postgres-service:
+        condition: service_healthy
+    volumes:
+      - volume-static:/staticfiles
+  # собирает статические файлы в папку
+
+  postgres-service:
+    container_name: postgres-container
+    image: postgres:17-alpine
+      # environment:
+      #   name=value
+    ports:
+       - 1234:5432
+    # внутренний порт 5432 на внешний 1234
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - volume-db:/var/lib/postgresql/data
+
+  nginx-service:
+    container_name: nginx-container
+    restart: unless-stopped
+    image: nginx-image
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - volume-static:/static
+    depends_on:
+      backend-service:
+        condition: service_started
+
+volumes:
+  volume-db:
+  volume-static:
+# http://localhost:8000/admin/login/?next=/admin/
