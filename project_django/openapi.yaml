@@ -1,0 +1,108 @@
+openapi: 3.0.0
+info:
+  title: Supercar API
+  version: "1.0.0"
+  description: API для управления данными о суперкарах
+
+servers:
+  - url: http://localhost:80
+
+paths:
+  /api/supercar:
+    get:
+      summary: Получить список суперкаров
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Supercar'
+    post:
+      summary: Создать новый суперкар
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Supercar'
+      responses:
+        '201':
+          description: Суперкар создан
+
+  /api/supercar/{pk}:
+    get:
+      summary: Получить суперкар по id
+      parameters:
+        - in: path
+          name: pk
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supercar'
+        '404':
+          description: Не найдено
+    patch:
+      summary: Обновить суперкар по id
+      parameters:
+        - in: path
+          name: pk
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Supercar'
+      responses:
+        '200':
+          description: Обновлено
+    delete:
+      summary: Удалить суперкар
+      parameters:
+        - in: path
+          name: pk
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Успешно удалено
+
+components:
+  schemas:
+    Supercar:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        car_brand:
+          type: string
+          example: Ferrari
+        car_model:
+          type: string
+          example: F90
+        brand_country:
+          type: string
+          example: Italy
+        release_date:
+          type: string
+          format: date
+          example: 2024-01-01
+        max_speed:
+          type: integer
+          example: 340
+        engine_name:
+          type: string
+          example: V8 Turbo
