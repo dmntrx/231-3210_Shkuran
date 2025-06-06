@@ -15,9 +15,22 @@ Supercar::Supercar(int id, QString car_brand, QString car_model, QString brand_c
 }
 
 Supercar Supercar::fromJson(const QByteArray &jsonData) {
-    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+    qDebug() << "JSON data size:" << jsonData.size();
+    qDebug() << "JSON data:" << jsonData;
+
+//    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+//    if (!doc.isObject()) {
+//        throw std::runtime_error("Invalid JSON format");
+//    }
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData, &parseError);
+    if (parseError.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parse error:" << parseError.errorString();
+        throw std::runtime_error(parseError.errorString().toStdString());
+    }
     if (!doc.isObject()) {
-        throw std::runtime_error("Invalid JSON format");
+        throw std::runtime_error("Invalid JSON format: not an object");
     }
 
     QJsonObject obj = doc.object();

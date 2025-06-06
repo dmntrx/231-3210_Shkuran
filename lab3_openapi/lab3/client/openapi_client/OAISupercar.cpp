@@ -278,15 +278,20 @@ bool OAISupercar::isValid() const {
 }
 
 OAISupercar OAISupercar::fromJson(const QByteArray &jsonData) {
-    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData, &parseError);
+    if (parseError.error != QJsonParseError::NoError) {
+        throw std::runtime_error(parseError.errorString().toStdString());
+    }
     if (!doc.isObject()) {
         throw std::runtime_error("Invalid JSON format");
     }
 
     OAISupercar car;
-    car.fromJson(doc.toJson(QJsonDocument::Compact));  // Вызов встроенного метода
+    car.fromJson(QString::fromUtf8(jsonData));  // вызов существующего метода из QString
     return car;
 }
+
 
 
 } // namespace OpenAPI

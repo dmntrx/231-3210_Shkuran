@@ -120,7 +120,7 @@ ClientInterface* ClientInterface::m_instance = nullptr;
 
 ClientInterface* ClientInterface::getInstance(const QString& rootUrl) {
     if (!m_instance) {
-        QString url = rootUrl.isEmpty() ? "http://localhost:8000" : rootUrl;
+        QString url = rootUrl.isEmpty() ? "http://localhost:80" : rootUrl;
         m_instance = new ClientInterface(url);
     }
     return m_instance;
@@ -190,11 +190,25 @@ OAISupercar ClientInterface::CreateSupercar(const OAISupercar& car) {
     OAISupercar result;
     bool success = false;
 
+    // Отладочный вывод: нет встроенного asJson? Выведем поля вручную
+    qDebug() << "CreateSupercar - отправляем данные:";
+    qDebug() << " id:" << car.getId()
+             << " brand:" << car.getCarBrand()
+             << " model:" << car.getCarModel()
+             << " country:" << car.getBrandCountry()
+             << " release_date:" << car.getReleaseDate().toString(Qt::ISODate)
+             << " max_speed:" << car.getMaxSpeed()
+             << " engine:" << car.getEngineName();
+
+
     QObject::connect(&api, &OAIDefaultApi::apiSupercarPostSignalFull,
                      [&](OAIHttpRequestWorker *worker) {
-                         QByteArray responseData = worker->response;  // берем ответ напрямую
+                         QByteArray responseData = worker->response;
+                         qDebug() << "CreateSupercar - ответ сервера:" << responseData;
                          try {
-                             result = OAISupercar::fromJson(responseData);  // статический метод парсинга JSON
+                             OAISupercar temp = OAISupercar::fromJson(responseData);
+                             qDebug() << "Parse successful, temp id:" << temp.getId();
+                             result = temp;
                              success = true;
                          } catch (const std::exception &e) {
                              qWarning() << "Ошибка парсинга JSON:" << e.what();
@@ -214,11 +228,11 @@ OAISupercar ClientInterface::CreateSupercar(const OAISupercar& car) {
 
     if (!success) {
         qWarning() << "Не удалось создать суперкар";
-        // Можно выбросить исключение или вернуть объект по умолчанию
     }
 
     return result;
 }
+
 
 
 OAISupercar ClientInterface::UpdateSupercar(unsigned int id, const OAISupercar& car) {
@@ -267,12 +281,14 @@ void ClientInterface::DeleteSupercar(unsigned int id) {
 
     QObject::connect(&api, &OAIDefaultApi::apiSupercarPkDeleteSignal,
                      [&]() {
+                         qDebug() << "Deleted supercar with id" << id << "successfully.";
                          loop.quit();
                      });
 
     QObject::connect(&api, &OAIDefaultApi::apiSupercarPkDeleteSignalE,
                      [&](QNetworkReply::NetworkError error, const QString &errorStr) {
                          qWarning() << "Ошибка при deleteSupercar:" << error << errorStr;
+                            qDebug() << "Supercar with id" << id << "does not exist or already deleted.";
                              loop.quit();
                      });
 

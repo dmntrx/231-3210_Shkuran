@@ -95,10 +95,8 @@ void MainWindow::on_listButton_clicked()
 
 void MainWindow::on_updateButton_clicked()
 {
-    // Создаем OAISupercar с нужными данными для обновления (например, так)
     OpenAPI::OAISupercar updatedCar;
-    updatedCar.setCarBrand("UpdatedBrand");
-    // ... и т.д.
+    updatedCar.setCarBrand("McLaren");
 
     OpenAPI::OAISupercar oaiResult = m_interface->UpdateSupercar(1002, updatedCar);
     Supercar result = convertToSupercar(oaiResult);
@@ -110,7 +108,7 @@ void MainWindow::on_updateButton_clicked()
 
 void MainWindow::on_deleteButton_clicked()
 {
-    m_interface->DeleteSupercar(7);
-    qDebug() << "Deleted car with id 7";
+    m_interface->DeleteSupercar(8);
+//    qDebug() << "Deleted car with id 8";
 }
 
